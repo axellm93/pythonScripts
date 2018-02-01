@@ -1,0 +1,53 @@
+import maya.cmds as cmds
+'''
+Created by Carlos Axel Landa Medina
+axellandamedina@gmail.com
+PLEASE GIVE CREDIT
+Rivet Script that works with the UV's of a polyMesh and allows to modify the position of the follicle
+depending in the position of another object
+polyMesh should have Uv's
+Select vertex and run the script
+
+'''
+
+sel = cmds.ls(sl = 1 , fl =1)
+
+for s in sel:
+        pos = cmds.xform(s, q=True, ws=True, a=True, t=True)
+        follicle = cmds.createNode('follicle', ss=True)
+        parentSelection = cmds.listRelatives(s, p = True)  
+        uvMap = cmds.polyListComponentConversion (s,  fv = True  , tuv = True)
+        uv = cmds.polyEditUV(uvMap, query=True, r = True, u = True, v = True  )
+    
+        cmds.setAttr(follicle + '.parameterU', uv[0])
+        cmds.setAttr(follicle + '.parameterV', uv[1])
+        
+        cmds.connectAttr(parentSelection[0] + '.outMesh',follicle+ '.inputMesh', f = True,force= True)
+        cmds.connectAttr( parentSelection[0] + '.worldMatrix[0]',follicle + '.inputWorldMatrix' , f = True,force= True)
+        
+        follicleParent = cmds.listRelatives(follicle, p = True)[0]
+        cmds.connectAttr(follicle + '.outRotate',follicleParent + '.rotate', f = True,force= True)
+        cmds.connectAttr(follicle + '.outTranslate',follicleParent + '.translate', f = True,force= True)
+
+
+        closestPointOnMesh =  cmds.createNode('closestPointOnMesh', name = 'closestPointOnMeshRivet' )  
+        meshParent = cmds.listRelatives(s, p = True)[0]
+        cmds.connectAttr(meshParent+'.outMesh',closestPointOnMesh+'.inMesh',force= True)
+        cmds.connectAttr(closestPointOnMesh+'.result.parameterU',follicle+'.parameterU',force= True)
+        cmds.connectAttr(closestPointOnMesh+'.result.parameterV',follicle+'.parameterV',force= True) 
+        
+        #cmds.connectAttr(follicle+'.outRotate',follicleParent+'.rotate',force= True) 
+        cmds.connectAttr(closestPointOnMesh+'.result.position',follicleParent+'.translate',force= True)    
+        
+        
+    
+        
+    
+    
+        
+      
+    
+        
+       
+        
+        
